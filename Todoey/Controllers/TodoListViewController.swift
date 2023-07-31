@@ -13,36 +13,24 @@ import UIKit
 class TodoListViewController: UITableViewController {
     // MARK: - Properties
 
+    // Create an array of type Item.
     var itemArray = [Item]()
-    // Hard coded array of strings to populate table view cells with dummy data.
-    // ["Find motivation 🤑", "Keep learning 🤓", "Destroy my boss 😈", "Cuddle my son 🤗"]
 
-    // Create User defaults
-    let defaults = UserDefaults.standard
+    // Create path to user defaults file.
+    let dataFilePath = FileManager.default.urls(
+        for: .documentDirectory,
+        in: .userDomainMask
+    ).first?.appendingPathComponent("Items.plist")
 
     // MARK: - Lifecycle Methods
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Create an array of item objects.
-        let newItem = Item()
-        newItem.title = "Find motivation 🤑"
-        itemArray.append(newItem)
+//        // Print path to Items.plist file.
+//        print(dataFilePath)
 
-        let newItem2 = Item()
-        newItem2.title = "Keep learning 🤓"
-        itemArray.append(newItem2)
-
-        let newItem3 = Item()
-        newItem3.title = "Cuddle my son 🤗"
-        itemArray.append(newItem3)
-
-        // Load saved data from user defaults making it optional array of Strings.
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-            // Assign items to itemArray.
-            itemArray = items
-        }
+        loadItems()
     }
 
     // MARK: - TableView Datasource Methods
@@ -98,26 +86,15 @@ class TodoListViewController: UITableViewController {
 //        // Print the selected cell.
 //        print(itemArray[indexPath.row])
 
-        // NOTE: you can replace if else statement below with a single line of code.
-        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
 //        if itemArray[indexPath.row].done == false {
 //            itemArray[indexPath.row].done = true
 //        } else {
 //            itemArray[indexPath.row].done = false
 //        }
+        // NOTE: you can replace if else statement with a single line of code.
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
 
-        // Check if selected cell is already selected.
-        // If so, remove checkmark.
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            // Remove checkmark.
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-            // Else, add checkmark.
-        } else {
-            // Add checkmark.
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
-
-        tableView.reloadData()
+        saveItems()
 
         // Deselect the selected cell.
         tableView.deselectRow(at: indexPath, animated: true)
@@ -152,11 +129,7 @@ class TodoListViewController: UITableViewController {
             // Append new item to item array.
             self.itemArray.append(newItem)
 
-            // Store item in user defaults using TodoListArray key.
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
-
-            // Reload table view data.
-            self.tableView.reloadData()
+            self.saveItems()
         }
 
         // Add a text field to the alert using closure syntax.
@@ -170,5 +143,37 @@ class TodoListViewController: UITableViewController {
 
         // Present the alert.
         present(alert, animated: true, completion: nil)
+    }
+
+    // MARK: - Model Manipulation Methods
+
+    func saveItems() {
+        // Create an instance of encoder.
+        let encoder = PropertyListEncoder()
+
+        do {
+            // Encode item array.
+            let data = try encoder.encode(itemArray)
+            // Write data to dataFilePath.
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array, \(error)")
+        }
+        // Reload table view.
+        tableView.reloadData()
+    }
+
+    func loadItems() {
+        // Check if dataFilePath exists.
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            // Create an instance of decoder.
+            let decoder = PropertyListDecoder()
+            do {
+                // Decode data.
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Error decoding item array, \(error)")
+            }
+        }
     }
 }
