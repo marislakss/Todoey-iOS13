@@ -21,10 +21,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _: UIApplication,
         didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-//        // Print path to user defaults file.
-//        print(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).last!
-//        as String)
-
         true
     }
 

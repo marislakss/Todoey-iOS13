@@ -41,10 +41,6 @@ class TodoListViewController: UITableViewController {
 
     // MARK: - TableView Datasource Methods
 
-    /**
-      Create sections in table view.
-     **/
-
     // Create rows in table view.
     override func tableView(
         _: UITableView,
@@ -65,7 +61,7 @@ class TodoListViewController: UITableViewController {
         // Set cell text to itemArray at the current row.
         cell.textLabel?.text = item.title
 
-        // Above code can be shortened using Ternary operator ==>
+        // Using Ternary operator ==>
         // value = condition ? valueIFTrue : valueIfFalse
         cell.accessoryType = item.done ? .checkmark : .none
 
@@ -81,11 +77,6 @@ class TodoListViewController: UITableViewController {
         _: UITableView,
         didSelectRowAt indexPath: IndexPath
     ) {
-//        // Delete item from context.
-//        context.delete(itemArray[indexPath.row])
-//        // Remove item from item array.
-//        itemArray.remove(at: indexPath.row)
-
         // NOTE: Here true turns to false and false turns to true.
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
 
@@ -158,7 +149,34 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
     }
 
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+    func loadItems(
+        with request: NSFetchRequest<Item> = Item.fetchRequest(),
+        predicate: NSPredicate? = nil
+    ) {
+        // Create a predicate.
+        // Create a query to search for items that belong to the selected category.
+        let categoryPredicate = NSPredicate(
+            format: "parentCategory.name MATCHES %@",
+            selectedCategory!.name!
+        )
+
+        // Create a request.
+        // if else is used to avoid force unwrapping predicate.
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(
+                andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate]
+            )
+        } else {
+            request.predicate = categoryPredicate
+        }
+
+        // Create a sort descriptor.
+        // Sort items in ascending order by title.
+        request.sortDescriptors = [NSSortDescriptor(
+            key: "title",
+            ascending: true
+        )]
+
         do {
             // Fetch data from context.
             itemArray = try context.fetch(request)
@@ -182,7 +200,7 @@ extension TodoListViewController: UISearchBarDelegate {
 
         // Create a predicate.
         // Create a query to search for items that contain the search bar text.
-        request.predicate = NSPredicate(
+        let predicate = NSPredicate(
             format: "title CONTAINS[cd] %@",
             searchBar.text!
         )
@@ -195,7 +213,7 @@ extension TodoListViewController: UISearchBarDelegate {
         )]
 
         // Call loadItems method with request parameter.
-        loadItems(with: request)
+        loadItems(with: request, predicate: predicate)
     }
 
     func searchBar(_ searchBar: UISearchBar, textDidChange _: String) {
