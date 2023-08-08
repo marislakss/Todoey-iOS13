@@ -6,6 +6,7 @@
 //  Copyright © 2019 App Brewery. All rights reserved.
 //
 
+import CoreData
 import UIKit
 
 // Subclass TodoListViewController from UITableViewController.
@@ -16,21 +17,26 @@ class TodoListViewController: UITableViewController {
     // Create an array of type Item.
     var itemArray = [Item]()
 
-    // Create path to user defaults file.
-    let dataFilePath = FileManager.default.urls(
-        for: .documentDirectory,
-        in: .userDomainMask
-    ).first?.appendingPathComponent("Items.plist")
+    var selectedCategory: Category? {
+        // didSet is a property observer.
+        didSet {
+            loadItems()
+        }
+    }
+
+    // Get access to AppDelegate as an object.
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     // MARK: - Lifecycle Methods
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-//        // Print path to Items.plist file.
-//        print(dataFilePath)
-
-        loadItems()
+        // Obtain path to where data is stored.
+        print(FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ))
     }
 
     // MARK: - TableView Datasource Methods
@@ -59,14 +65,6 @@ class TodoListViewController: UITableViewController {
         // Set cell text to itemArray at the current row.
         cell.textLabel?.text = item.title
 
-//        if item.done == true {
-//            // Add checkmark.
-//            cell.accessoryType = .checkmark
-//        } else {
-//            // Remove checkmark.
-//            cell.accessoryType = .none
-//        }
-
         // Above code can be shortened using Ternary operator ==>
         // value = condition ? valueIFTrue : valueIfFalse
         cell.accessoryType = item.done ? .checkmark : .none
@@ -83,17 +81,15 @@ class TodoListViewController: UITableViewController {
         _: UITableView,
         didSelectRowAt indexPath: IndexPath
     ) {
-//        // Print the selected cell.
-//        print(itemArray[indexPath.row])
+//        // Delete item from context.
+//        context.delete(itemArray[indexPath.row])
+//        // Remove item from item array.
+//        itemArray.remove(at: indexPath.row)
 
-//        if itemArray[indexPath.row].done == false {
-//            itemArray[indexPath.row].done = true
-//        } else {
-//            itemArray[indexPath.row].done = false
-//        }
-        // NOTE: you can replace if else statement with a single line of code.
+        // NOTE: Here true turns to false and false turns to true.
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
 
+        // Commit current state of context to persistent container.
         saveItems()
 
         // Deselect the selected cell.
@@ -120,11 +116,15 @@ class TodoListViewController: UITableViewController {
             // Create a completion handler to handle user input.
         ) { _ in
             // What will happen once the user clicks the Add Item button on our UIAlert.
-            // Create newItem constant and initialize it as Item class.
-            let newItem = Item()
+
+            let newItem = Item(context: self.context)
             // Set title property.
             // You can force unwrap textField.text because you know it will never be nil.
             newItem.title = textField.text!
+            // Set done property.
+            newItem.done = false
+            // Set parent category.
+            newItem.parentCategory = self.selectedCategory
 
             // Append new item to item array.
             self.itemArray.append(newItem)
@@ -148,31 +148,64 @@ class TodoListViewController: UITableViewController {
     // MARK: - Model Manipulation Methods
 
     func saveItems() {
-        // Create an instance of encoder.
-        let encoder = PropertyListEncoder()
-
         do {
-            // Encode item array.
-            let data = try encoder.encode(itemArray)
-            // Write data to dataFilePath.
-            try data.write(to: dataFilePath!)
+            // Save data to context.
+            try context.save()
         } catch {
-            print("Error encoding item array, \(error)")
+            print("Error saving context \(error)")
         }
         // Reload table view.
         tableView.reloadData()
     }
 
-    func loadItems() {
-        // Check if dataFilePath exists.
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            // Create an instance of decoder.
-            let decoder = PropertyListDecoder()
-            do {
-                // Decode data.
-                itemArray = try decoder.decode([Item].self, from: data)
-            } catch {
-                print("Error decoding item array, \(error)")
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+        do {
+            // Fetch data from context.
+            itemArray = try context.fetch(request)
+        } catch {
+            print("Error fetching data from context \(error)")
+        }
+        // Reload table view.
+        tableView.reloadData()
+    }
+}
+
+// MARK: - Search Bar Methods
+
+// Extend TodoListViewController to conform to UISearchBarDelegate.
+// This allows to implement searchBarSearchButtonClicked method.
+extension TodoListViewController: UISearchBarDelegate {
+    // Implement searchBarSearchButtonClicked method.
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        // Create a fetch request.
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+
+        // Create a predicate.
+        // Create a query to search for items that contain the search bar text.
+        request.predicate = NSPredicate(
+            format: "title CONTAINS[cd] %@",
+            searchBar.text!
+        )
+
+        // Create a sort descriptor.
+        // Sort items in ascending order by title.
+        request.sortDescriptors = [NSSortDescriptor(
+            key: "title",
+            ascending: true
+        )]
+
+        // Call loadItems method with request parameter.
+        loadItems(with: request)
+    }
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange _: String) {
+        if searchBar.text?.isEmpty == true {
+            loadItems()
+
+            // Dispatch queue.
+            DispatchQueue.main.async {
+                // Dismiss keyboard and cursor.
+                searchBar.resignFirstResponder()
             }
         }
     }
