@@ -80,6 +80,24 @@ class TodoListViewController: UITableViewController {
         _: UITableView,
         didSelectRowAt indexPath: IndexPath
     ) {
+        // Perform Update operation on Realm objects.
+        if let item = todoItems?[indexPath.row] {
+            do {
+                try realm.write {
+                    // Delete item.
+                    // realm.delete(item)
+
+                    // Update item.
+                    item.done = !(item.done)
+                }
+            } catch {
+                print("Error saving done status, \(error)")
+            }
+        }
+
+        tableView.reloadData()
+
+
 //        // NOTE: Here true turns to false and false turns to true.
 //        todoItems?[indexPath.row].done = !(todoItems[indexPath.row].done)
 //
