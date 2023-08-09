@@ -25,16 +25,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Print path to Realm database.
         print(Realm.Configuration.defaultConfiguration.fileURL)
 
-        let data = RealmData()
-        data.name = "Maris"
-        data.age = 23
-
         do {
             // Initialise Realm.
             let realm = try Realm()
-            try realm.write {
-                realm.add(data)
-            }
         } catch {
             print("Error initialising new realm, \(error)")
         }

@@ -1,5 +1,5 @@
 //
-//  RealmData.swift
+//  Category.swift
 //  Todoey
 //
 //  Created by Māris Lakšs on 09/08/2023.
@@ -9,11 +9,11 @@
 import Foundation
 import RealmSwift
 
-// Object is a class that defines your Realm data model.
-class RealmData: Object {
+class Category: Object {
     // dynamic means declaration modifier and it tells the runtime
     // to use dynamic dispatch (while your app is running) over static dispatch.
-    @objc dynamic var name: String = ""
-    @objc dynamic var age: Int = 0
+    @objc dynamic var name = ""
+    // Create relationship between Category and Item.
+    // List is a container type (used in Realm framework) for objects of a given class.
+    let items = List<Item>()
 }
-

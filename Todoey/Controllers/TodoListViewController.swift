@@ -20,7 +20,7 @@ class TodoListViewController: UITableViewController {
     var selectedCategory: Category? {
         // didSet is a property observer.
         didSet {
-            loadItems()
+//            loadItems()
         }
     }
 
@@ -108,17 +108,17 @@ class TodoListViewController: UITableViewController {
         ) { _ in
             // What will happen once the user clicks the Add Item button on our UIAlert.
 
-            let newItem = Item(context: self.context)
-            // Set title property.
-            // You can force unwrap textField.text because you know it will never be nil.
-            newItem.title = textField.text!
-            // Set done property.
-            newItem.done = false
-            // Set parent category.
-            newItem.parentCategory = self.selectedCategory
-
-            // Append new item to item array.
-            self.itemArray.append(newItem)
+//            let newItem = Item(context: self.context)
+//            // Set title property.
+//            // You can force unwrap textField.text because you know it will never be nil.
+//            newItem.title = textField.text!
+//            // Set done property.
+//            newItem.done = false
+//            // Set parent category.
+//            newItem.parentCategory = self.selectedCategory
+//
+//            // Append new item to item array.
+//            self.itemArray.append(newItem)
 
             self.saveItems()
         }
@@ -149,82 +149,82 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
     }
 
-    func loadItems(
-        with request: NSFetchRequest<Item> = Item.fetchRequest(),
-        predicate: NSPredicate? = nil
-    ) {
-        // Create a predicate.
-        // Create a query to search for items that belong to the selected category.
-        let categoryPredicate = NSPredicate(
-            format: "parentCategory.name MATCHES %@",
-            selectedCategory!.name!
-        )
-
-        // Create a request.
-        // if else is used to avoid force unwrapping predicate.
-        if let additionalPredicate = predicate {
-            request.predicate = NSCompoundPredicate(
-                andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate]
-            )
-        } else {
-            request.predicate = categoryPredicate
-        }
-
-        // Create a sort descriptor.
-        // Sort items in ascending order by title.
-        request.sortDescriptors = [NSSortDescriptor(
-            key: "title",
-            ascending: true
-        )]
-
-        do {
-            // Fetch data from context.
-            itemArray = try context.fetch(request)
-        } catch {
-            print("Error fetching data from context \(error)")
-        }
-        // Reload table view.
-        tableView.reloadData()
-    }
+//    func loadItems(
+//        with request: NSFetchRequest<Item> = Item.fetchRequest(),
+//        predicate: NSPredicate? = nil
+//    ) {
+//        // Create a predicate.
+//        // Create a query to search for items that belong to the selected category.
+//        let categoryPredicate = NSPredicate(
+//            format: "parentCategory.name MATCHES %@",
+//            selectedCategory!.name!
+//        )
+//
+//        // Create a request.
+//        // if else is used to avoid force unwrapping predicate.
+//        if let additionalPredicate = predicate {
+//            request.predicate = NSCompoundPredicate(
+//                andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate]
+//            )
+//        } else {
+//            request.predicate = categoryPredicate
+//        }
+//
+//        // Create a sort descriptor.
+//        // Sort items in ascending order by title.
+//        request.sortDescriptors = [NSSortDescriptor(
+//            key: "title",
+//            ascending: true
+//        )]
+//
+//        do {
+//            // Fetch data from context.
+//            itemArray = try context.fetch(request)
+//        } catch {
+//            print("Error fetching data from context \(error)")
+//        }
+//        // Reload table view.
+//        tableView.reloadData()
+//    }
 }
 
 // MARK: - Search Bar Methods
 
 // Extend TodoListViewController to conform to UISearchBarDelegate.
 // This allows to implement searchBarSearchButtonClicked method.
-extension TodoListViewController: UISearchBarDelegate {
-    // Implement searchBarSearchButtonClicked method.
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        // Create a fetch request.
-        let request: NSFetchRequest<Item> = Item.fetchRequest()
-
-        // Create a predicate.
-        // Create a query to search for items that contain the search bar text.
-        let predicate = NSPredicate(
-            format: "title CONTAINS[cd] %@",
-            searchBar.text!
-        )
-
-        // Create a sort descriptor.
-        // Sort items in ascending order by title.
-        request.sortDescriptors = [NSSortDescriptor(
-            key: "title",
-            ascending: true
-        )]
-
-        // Call loadItems method with request parameter.
-        loadItems(with: request, predicate: predicate)
-    }
-
-    func searchBar(_ searchBar: UISearchBar, textDidChange _: String) {
-        if searchBar.text?.isEmpty == true {
-            loadItems()
-
-            // Dispatch queue.
-            DispatchQueue.main.async {
-                // Dismiss keyboard and cursor.
-                searchBar.resignFirstResponder()
-            }
-        }
-    }
-}
+//extension TodoListViewController: UISearchBarDelegate {
+//    // Implement searchBarSearchButtonClicked method.
+//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+//        // Create a fetch request.
+//        let request: NSFetchRequest<Item> = Item.fetchRequest()
+//
+//        // Create a predicate.
+//        // Create a query to search for items that contain the search bar text.
+//        let predicate = NSPredicate(
+//            format: "title CONTAINS[cd] %@",
+//            searchBar.text!
+//        )
+//
+//        // Create a sort descriptor.
+//        // Sort items in ascending order by title.
+//        request.sortDescriptors = [NSSortDescriptor(
+//            key: "title",
+//            ascending: true
+//        )]
+//
+//        // Call loadItems method with request parameter.
+//        loadItems(with: request, predicate: predicate)
+//    }
+//
+//    func searchBar(_ searchBar: UISearchBar, textDidChange _: String) {
+//        if searchBar.text?.isEmpty == true {
+//            loadItems()
+//
+//            // Dispatch queue.
+//            DispatchQueue.main.async {
+//                // Dismiss keyboard and cursor.
+//                searchBar.resignFirstResponder()
+//            }
+//        }
+//    }
+//}
