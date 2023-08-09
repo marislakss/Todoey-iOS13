@@ -15,9 +15,8 @@ class CategoryViewController: UITableViewController {
     // Initialise Realm.
     let realm = try! Realm()
 
-    var categories = [Category]()
-
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    // Results is an auto-updating container type in Realm returned from object queries.
+    var categories: Results<Category>? // Optional because it will be nil until we load data.
 
     // MARK: - Lifecycle Methods
 
@@ -33,7 +32,8 @@ class CategoryViewController: UITableViewController {
         _: UITableView,
         numberOfRowsInSection _: Int
     ) -> Int {
-        categories.count
+        // if categories is not nil, return categories.count, otherwise return 1.
+        categories?.count ?? 1
     }
 
     override func tableView(
@@ -42,7 +42,7 @@ class CategoryViewController: UITableViewController {
     ) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
 
-        cell.textLabel?.text = categories[indexPath.row].name
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added yet"
 
         return cell
     }
@@ -63,7 +63,7 @@ class CategoryViewController: UITableViewController {
         let destinationVC = segue.destination as! TodoListViewController
 
         if let indexPath = tableView.indexPathForSelectedRow {
-            destinationVC.selectedCategory = categories[indexPath.row]
+            destinationVC.selectedCategory = categories?[indexPath.row]
         }
     }
 
@@ -81,16 +81,12 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
     }
 
+    // Perform Read from database.
     func loadCategories() {
-//        let request: NSFetchRequest<Category> = Category.fetchRequest()
-//
-//        do {
-//            categories = try context.fetch(request)
-//        } catch {
-//            print("Error loading categories: \(error)")
-//        }
-//
-//        tableView.reloadData()
+
+        categories = realm.objects(Category.self)
+
+        tableView.reloadData()
     }
 
     // MARK: - Add New Categories
@@ -111,8 +107,6 @@ class CategoryViewController: UITableViewController {
             let newCategory = Category()
 
             newCategory.name = textField.text!
-
-            self.categories.append(newCategory)
 
             self.save(category: newCategory)
         }
