@@ -14,7 +14,7 @@ import UIKit
 class TodoListViewController: UITableViewController {
     // MARK: - Properties
 
-    // Create a Results container to store Item objects.
+    // Create a collection of Results(container) to store Item objects.
     var todoItems: Results<Item>?
 
     // Initialise Realm.
@@ -31,12 +31,6 @@ class TodoListViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Obtain path to where data is stored.
-        print(FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ))
     }
 
     // MARK: - TableView Datasource Methods
@@ -73,8 +67,6 @@ class TodoListViewController: UITableViewController {
 
     // MARK: - TableView Delegate Methods
 
-    /// Handle user interaction with table view.
-
     // Handle user selection of table view cell.
     override func tableView(
         _: UITableView,
@@ -97,13 +89,6 @@ class TodoListViewController: UITableViewController {
 
         tableView.reloadData()
 
-
-//        // NOTE: Here true turns to false and false turns to true.
-//        todoItems?[indexPath.row].done = !(todoItems[indexPath.row].done)
-//
-//        // Commit current state of context to persistent container.
-//        saveItems()
-
         // Deselect the selected cell.
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -121,7 +106,7 @@ class TodoListViewController: UITableViewController {
             preferredStyle: .alert
         )
 
-        // Create an alert action.
+        // Create an alert action once user taps the Add Item button.
         let action = UIAlertAction(
             title: "Add Item",
             style: .default
@@ -133,7 +118,7 @@ class TodoListViewController: UITableViewController {
                     try self.realm.write {
                         let newItem = Item()
                         newItem.title = textField.text!
-                        // newItem.dateCreated = Date()
+                        newItem.dateCreated = Date()
                         currentCategory.items.append(newItem)
                     }
                 } catch {
@@ -174,39 +159,24 @@ class TodoListViewController: UITableViewController {
 
 // Extend TodoListViewController to conform to UISearchBarDelegate.
 // This allows to implement searchBarSearchButtonClicked method.
-// extension TodoListViewController: UISearchBarDelegate {
-//    // Implement searchBarSearchButtonClicked method.
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//        // Create a fetch request.
-//        let request: NSFetchRequest<Item> = Item.fetchRequest()
-//
-//        // Create a predicate.
-//        // Create a query to search for items that contain the search bar text.
-//        let predicate = NSPredicate(
-//            format: "title CONTAINS[cd] %@",
-//            searchBar.text!
-//        )
-//
-//        // Create a sort descriptor.
-//        // Sort items in ascending order by title.
-//        request.sortDescriptors = [NSSortDescriptor(
-//            key: "title",
-//            ascending: true
-//        )]
-//
-//        // Call loadItems method with request parameter.
-//        loadItems(with: request, predicate: predicate)
-//    }
-//
-//    func searchBar(_ searchBar: UISearchBar, textDidChange _: String) {
-//        if searchBar.text?.isEmpty == true {
-//            loadItems()
-//
-//            // Dispatch queue.
-//            DispatchQueue.main.async {
-//                // Dismiss keyboard and cursor.
-//                searchBar.resignFirstResponder()
-//            }
-//        }
-//    }
-// }
+extension TodoListViewController: UISearchBarDelegate {
+    // Implement searchBarSearchButtonClicked method.
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!)
+            .sorted(byKeyPath: "dateCreated", ascending: true)
+
+        tableView.reloadData()
+    }
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange _: String) {
+        if searchBar.text?.isEmpty == true {
+            loadItems()
+
+            // Dispatch queue.
+            DispatchQueue.main.async {
+                // Dismiss keyboard and cursor.
+                searchBar.resignFirstResponder()
+            }
+        }
+    }
+}

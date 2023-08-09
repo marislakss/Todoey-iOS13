@@ -6,7 +6,6 @@
 //  Copyright (c) 2015 London App Brewery. All rights reserved.
 //
 
-import CoreData
 import RealmSwift
 import UIKit
 
@@ -23,51 +22,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         // Print path to Realm database.
-        print(Realm.Configuration.defaultConfiguration.fileURL)
+        // print(Realm.Configuration.defaultConfiguration.fileURL)
 
         do {
             // Initialise Realm.
-            let realm = try Realm()
+            _ = try Realm()
         } catch {
             print("Error initialising new realm, \(error)")
         }
 
         return true
-    }
-
-    func applicationWillTerminate(_: UIApplication) {
-        saveContext()
-    }
-
-    // MARK: - Core Data stack
-
-    // Lazy var is only loaded when it is called.
-    lazy var persistentContainer: NSPersistentContainer = {
-        // Create a persistent container (in default it is SQLite database).
-        let container = NSPersistentContainer(name: "DataModel")
-        container.loadPersistentStores(completionHandler: { _, error in
-            if let error = error as NSError? {
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            }
-        })
-        return container
-    }()
-
-    // MARK: - Core Data Saving support
-
-    // Helper method to save context when application is terminated.
-    func saveContext() {
-        // Context is like a temporary area where you can modify your data.
-        // Similar to a staging area in Git.
-        let context = persistentContainer.viewContext
-        if context.hasChanges {
-            do {
-                // Save context to persistent container.
-                try context.save()
-            } catch {
-                let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-            }
-        }
     }
 }
