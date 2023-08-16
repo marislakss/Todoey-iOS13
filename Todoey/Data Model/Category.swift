@@ -13,6 +13,7 @@ class Category: Object {
     // dynamic means declaration modifier and it tells the runtime
     // to use dynamic dispatch (while your app is running) over static dispatch.
     @objc dynamic var name = ""
+    @objc dynamic var color = ""
     // Create relationship between Category and Item.
     // List is a container type (used in Realm framework) for objects of a given class.
     let items = List<Item>()

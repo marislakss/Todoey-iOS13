@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "chameleon",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dwsdolce/Chameleon.git",
+      "state" : {
+        "revision" : "916fb01bec2b8c7b7a274ba16be4341ee73b74f8",
+        "version" : "2.2.1"
+      }
+    },
+    {
       "identity" : "realm-core",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/realm/realm-core.git",
@@ -16,6 +25,15 @@
       "state" : {
         "branch" : "master",
         "revision" : "752f8ae418f97c7e90c2c83ebeeb534c0357df4d"
+      }
+    },
+    {
+      "identity" : "swipecellkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SwipeCellKit/SwipeCellKit.git",
+      "state" : {
+        "revision" : "7219cad3098637176ace311510d11467dbfb9bb0",
+        "version" : "2.7.1"
       }
     }
   ],

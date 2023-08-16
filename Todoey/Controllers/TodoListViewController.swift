@@ -6,12 +6,14 @@
 //  Copyright © 2019 App Brewery. All rights reserved.
 //
 
+import Chameleon
+import ChameleonSwift
 import RealmSwift
 import UIKit
 
 // Subclass TodoListViewController from UITableViewController.
 // This allows to avoid implementing .self and IBOutlets, its all done for you.
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
     // MARK: - Properties
 
     // Create a collection of Results(container) to store Item objects.
@@ -19,6 +21,8 @@ class TodoListViewController: UITableViewController {
 
     // Initialise Realm.
     let realm = try! Realm()
+
+    @IBOutlet var searchBar: UISearchBar!
 
     var selectedCategory: Category? {
         // didSet is a property observer.
@@ -31,6 +35,16 @@ class TodoListViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        // Remove cell separators.
+        tableView.separatorStyle = .none
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // Set title of the navigation bar to the name of the selected category.
+        title = selectedCategory?.name
     }
 
     // MARK: - TableView Datasource Methods
@@ -48,11 +62,31 @@ class TodoListViewController: UITableViewController {
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        // Set up a cell and inherit it from the SwipeTableViewCell class.
+        let cell = super.tableView(
+            tableView,
+            cellForRowAt: indexPath
+        )
 
         if let item = todoItems?[indexPath.row] {
             // Set cell text to itemArray at the current row.
             cell.textLabel?.text = item.title
+
+            // Set cell background color to a gradient of the selected category color.
+            if let colour = UIColor(hexString: selectedCategory!.color)?
+                .darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)) {
+                cell.backgroundColor = colour
+
+                // Set cell text color to a contrasting color of the cell background color.
+                cell.textLabel?.textColor = ContrastColorOf(
+                    colour,
+                    returnFlat: true
+                )
+            }
+
+            // Set checkmark color to white.
+            cell.accessoryType = UITableViewCell.AccessoryType.checkmark
+            cell.tintColor = UIColor.white
 
             // Using Ternary operator ==>
             // value = condition ? valueIFTrue : valueIfFalse
@@ -152,6 +186,20 @@ class TodoListViewController: UITableViewController {
 
         // Reload table view.
         tableView.reloadData()
+    }
+
+    // MARK: - Delete Data From Swipe
+
+    override func updateModel(at indexPath: IndexPath) {
+        if let itemForDeletion = todoItems?[indexPath.row] {
+            do {
+                try realm.write {
+                    self.realm.delete(itemForDeletion)
+                }
+            } catch {
+                print("Error deleting todo item: \(error)")
+            }
+        }
     }
 }
 
